@@ -58,7 +58,7 @@ if __name__ == '__main__':
                 unique_games[game_id] = {'name': game_name, 'peak_avg': avg_players}
     
     print("number before filtering:", len(unique_games))    
-    filtered_games = {appid: info for appid, info in unique_games.items() if info['peak_avg'] >= 10000}
+    filtered_games = {appid: info for appid, info in unique_games.items() if info['peak_avg'] >= 1000}
     print("number after filtering:", len(filtered_games))
 
     # Iterate over games with a progress bar.
@@ -74,7 +74,7 @@ if __name__ == '__main__':
                     note['game_id'] = appid
                     english_patch_notes.append(note)
             # Only add games with more than 20 patch notes.
-            if len(english_patch_notes) > 20:
+            if len(english_patch_notes) > 5:
                 all_combined_patch_notes.extend(english_patch_notes)
     
     # Write all patch notes to a single JSON file.

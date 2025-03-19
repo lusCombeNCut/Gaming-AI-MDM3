@@ -20,7 +20,16 @@ df = df.sort_values('Month')
 df.set_index('Month', inplace=True)
 # Ignore the first year of data
 df = df[df.index >= df.index.min() + pd.DateOffset(months=6)]
+df = df.dropna()
+df = df[df['Avg. Players'] > 0]
+print(df.describe())
 ts = df['Avg. Players'].pct_change() * 100
+print(ts.describe())
+# Find where percentage change is less than 100% or greater than -100% or not nan
+
+ts = ts[(ts < 100) & (ts > -100)]
+ts = ts.dropna()
+
 ts.name = 'value'
 ts = ts.dropna()
 
@@ -35,6 +44,7 @@ decomposition = seasonal_decompose(ts_detrended, model='addative', period=12)
 ts_detrended = ts_detrended - decomposition.trend - decomposition.seasonal
 ts_detrended = ts_detrended.dropna()
 print(ts_detrended.describe())
+
 stat, p_value = shapiro(ts_detrended)
 print(f"Shapiro-Wilk Test: p-value = {p_value:.8f}")
 
@@ -70,12 +80,11 @@ def process_game_timeseries(game_df, game_id):
     ts_det = ts_det.dropna()
     after_rolling_count = len(ts_det)
     
-    print(f"Game ID {game_id} - initial: {initial_count}, after year filter: {after_year_filter_count}, "
-          f"after pct_change: {after_pct_change_count}, after rolling detrending: {after_rolling_count}")
+    # print(f"Game ID {game_id} - initial: {initial_count}, after year filter: {after_year_filter_count}, "
+    #       f"after pct_change: {after_pct_change_count}, after rolling detrending: {after_rolling_count}")
     
     # Check if enough data remains for seasonal decomposition
     if after_rolling_count < 24:
-        print(f"Warning: Game ID {game_id} - Only {after_rolling_count} observations after detrending. Skipping seasonal adjustment.")
         ts_det.name = 'value'
         return ts_det
     try:
@@ -83,7 +92,7 @@ def process_game_timeseries(game_df, game_id):
         ts_det = ts_det - decomposition.trend - decomposition.seasonal
         ts_det = ts_det.dropna()
     except ValueError as e:
-        print(f"Warning: seasonal_decompose failed for game {game_id}: {e}. Skipping seasonal adjustment.")
+        pass
     ts_det.name = 'value'
     return ts_det
 
@@ -106,7 +115,8 @@ all_game_topic_results = {}  # key: topic, value: list of diff values from each 
 
 unique_game_ids = events_df['appid'].unique()
 for game_id in unique_game_ids:
-    print(f"\n=== Analysis for Game ID {game_id} ===")
+
+    # print(f"\n=== Analysis for Game ID {game_id} ===")
     ts_detrended_game = process_game_timeseries(df.reset_index(), game_id)
     if ts_detrended_game.empty:
         print("No valid time series data for this game. Skipping.")
@@ -164,9 +174,9 @@ for game_id in unique_game_ids:
         t_crit = stats.t.ppf(1-0.025, df_val)
         ci_lower = diff - t_crit * se_diff
         ci_upper = diff + t_crit * se_diff
-        print(f"Game ID {game_id} | Topic {topic}: n_post = {n1}, n_baseline = {n2}, "
-              f"Mean Difference = {diff:.2f} (95% CI: {ci_lower:.2f}, {ci_upper:.2f}), "
-              f"t-stat = {t_stat:.2f}, p-value = {p_val:.7f}")
+        # print(f"Game ID {game_id} | Topic {topic}: n_post = {n1}, n_baseline = {n2}, "
+        #       f"Mean Difference = {diff:.2f} (95% CI: {ci_lower:.2f}, {ci_upper:.2f}), "
+        #       f"t-stat = {t_stat:.2f}, p-value = {p_val:.7f}")
     
     # # (Optional) Plot the detrended series with event markers for this game
     # plt.figure(figsize=(12, 6))

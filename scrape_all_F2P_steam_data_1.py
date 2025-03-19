@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from tqdm import tqdm  # progress bar
 
 def get_free_to_play_games():
-    url = 'https://store.steampowered.com/search/?term=Counter-Strike+2&maxprice=free&category1=998&ndl=1'
+    url = 'https://store.steampowered.com/search/?maxprice=free&category1=998&ndl=1'
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
