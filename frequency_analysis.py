@@ -61,16 +61,7 @@ def load_data(game_data_file, patch_notes_dir):
 
     return pd.read_csv(data_file)
 
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-
 def plot_game_trends(df, game_name):
-    
     first_word = game_name.split()[0].lower()  
     game_data = df[df["Game_Name"].str.lower().str.startswith(first_word)].copy()
     
@@ -78,34 +69,41 @@ def plot_game_trends(df, game_name):
         print(f"No data found for '{game_name}'")
         return
 
-    # Convert 'month' to datetime and format as YYYY-MM
-    game_data["month"] = pd.to_datetime(game_data["month"])
-    game_data["month"] = game_data["month"].dt.strftime("%Y-%m")
+    # Convert 'month' to categorical format for ordered plotting
     game_data["month"] = pd.Categorical(game_data["month"], ordered=True, categories=sorted(game_data["month"].unique()))
+
+    # Clean and convert '% Gain' column
+    game_data["% Gain"] = (
+        game_data["% Gain"]
+        .astype(str)
+        .str.replace("%", "", regex=False)  # Remove % sign
+        .str.strip()  # Remove spaces
+    )
+
+    # Convert to float (handling errors safely)
+    game_data["% Gain"] = pd.to_numeric(game_data["% Gain"], errors="coerce").fillna(0)
 
     # Create the figure and axes
     fig, ax1 = plt.subplots(figsize=(14, 7))
 
-    # Plot Avg. Players on the left y-axis
     ax1.set_xlabel("Month", fontsize=16)
-    ax1.set_ylabel("Avg. Players", color="blue", fontsize=16)
-    sns.lineplot(x=game_data["month"], y=game_data["Avg. Players"], marker="o", color="blue", ax=ax1, label="Avg. Players", ci=None)  # Remove shaded CI
+    ax1.set_ylabel("% Gain in Avg. Players", color="blue", fontsize=16)
+    sns.lineplot(x=game_data["month"], y=game_data["% Gain"], marker="o", color="blue", ax=ax1, label="% Gain", ci=None)
     ax1.tick_params(axis="y", labelcolor="blue")
 
     # Rotate x-axis labels for readability
-    plt.xticks(rotation=45,fontsize=12, ha="right")
+    plt.xticks(rotation=45, fontsize=12, ha="right")
     plt.yticks(fontsize=12)
 
-    # Create a second y-axis for Patch Count
+    # Create second y-axis for Patch Count
     ax2 = ax1.twinx()
     ax2.set_ylabel("Patch Count", color="red", fontsize=16)
 
-    sns.barplot(x=game_data["month"], y=game_data["patch_count"], color="red", alpha=0.5, ax=ax2, errorbar=None)
-
+    ax2.bar(game_data["month"], game_data["patch_count"], color="red", alpha=0.25)
     ax2.tick_params(axis="y", labelcolor="red")
 
     # Title & Formatting
-    plt.title(f"Patch Frequency vs. Player Trends for {game_name}", fontsize=18)
+    plt.title(f"% Gain vs. Patch Frequency for {game_name}", fontsize=18)
     fig.tight_layout()
     plt.show()
 
