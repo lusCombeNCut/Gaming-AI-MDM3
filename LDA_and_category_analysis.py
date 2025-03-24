@@ -93,10 +93,10 @@ def lda_on_game_tags(csv_path, n_topics=10, filter_out_tags=None, top_n_tags=10,
 # -------------------------------
 if __name__ == "__main__":
     # File path to your merged_game_twitch_data.csv
-    csv_file_path = r"C:\Users\szymc\Desktop\PythonProjects\Game Analysis\Gaming-AI-MDM3\datasets\merged_game_twitch_data.csv"
+    csv_file_path = r"C:\Users\Orlan\Documents\MDM3\Gaming-AI\Gaming-AI-MDM3\datasets\game_data.csv"
     # Output CSV path to save categorized games
-    output_csv_path = r"C:\Users\szymc\Desktop\PythonProjects\Game Analysis\categorized_games_with_topics.csv"
-
+    output_csv_path = r"C:\Users\Orlan\Documents\MDM3\Gaming-AI\Gaming-AI-MDM3\categorized_games_with_topics.csv"
+    
     # Run LDA on tags and save result to file
     updated_df = lda_on_game_tags(
         csv_path=csv_file_path,
