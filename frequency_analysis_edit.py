@@ -182,6 +182,39 @@ def plot_correlation_heatmap(df):
     plt.title("Correlation Heatmap")
     plt.show()
 
+
+def plot_correlation_heatmap_specific(df, game_name):
+    """ Heatmap showing correlation between patch intervals and player count for a specific game. """
+    
+    # Extract the first word from the game name and filter the data based on that
+    first_word = game_name.split()[0].lower()
+    game_data = df[df["Game_Name"].str.lower().str.startswith(first_word)].copy()
+    
+    # If no data is found for the given game name, print a message and exit the function
+    if game_data.empty:
+        print(f"No data found for '{game_name}'")
+        return
+    
+    # Apply pd.to_numeric to ensure the columns are numeric
+    cols = ["Avg. Players", "Gain", "prev_gap", "prev_prev_gap"]
+    game_data[cols] = game_data[cols].apply(pd.to_numeric, errors="coerce")
+
+    # Compute the correlation matrix
+    correlation_matrix = game_data[cols].corr()
+
+    # Rename the columns and index of the correlation matrix
+    correlation_matrix.columns = ["Avg. # Players", "Gain #", "Patch Gap", "Prev. Patch Gap"]
+    correlation_matrix.index = ["Avg. # Players", "Gain #", "Patch Gap", "Prev. Patch Gap"]
+
+    # Plot the heatmap
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
+    plt.title(f"Correlation Heatmap for {game_name}")
+    plt.show()
+
+
+
+
 if __name__ == "__main__":
     game_data_file = "C:/Users/ashru/Downloads/game_data (1).csv"
     patch_notes_dir = "C:/Users/ashru/OneDrive/Documents/FSAI/patch_notes"
@@ -194,6 +227,7 @@ if __name__ == "__main__":
     # Generate all three visualizations
     #plot_game_trends(merged_data, game_name)
     #plot_game_trends_change(merged_data, game_name)
-    plot_correlation_scatter(merged_data)
+    #plot_correlation_scatter(merged_data)
     plot_correlation_heatmap(merged_data)
+    plot_correlation_heatmap_specific(merged_data, game_name)
 
